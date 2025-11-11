@@ -4,6 +4,10 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { BusinessProvider, useBusiness } from "@/contexts/BusinessContext";
 import { AdminProvider } from "@/contexts/AdminContext";
+import { AdminAuthProvider, useAdminAuth } from "@/contexts/AdminAuthContext";
+import { AdminLayout } from "@/components/admin/AdminLayout";
+import { AdminLogin } from "@/pages/admin/login";
+import { AdminDashboard } from "@/pages/admin/dashboard";
 import { useEffect } from "react";
 import Layout from "@/components/layout/layout";
 import HomePage from "@/pages/home";
@@ -128,19 +132,66 @@ function AppContent() {
   );
 }
 
+// Admin routes wrapper component
+function AdminRoutes() {
+  const { isAuthenticated, isLoading } = useAdminAuth();
+  const [location] = useLocation();
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // Redirect to admin login if not authenticated
+  if (!isAuthenticated && !location.startsWith('/admin/login')) {
+    return <Redirect to="/admin/login" />;
+  }
+
+  // If on login page and already authenticated, redirect to dashboard
+  if (isAuthenticated && location === '/admin/login') {
+    return <Redirect to="/admin/dashboard" />;
+  }
+
+  return (
+    <AdminLayout>
+      <Switch>
+        <Route path="/admin/dashboard" component={AdminDashboard} />
+        <Route path="/admin/login" component={AdminLogin} />
+        <Route>
+          <Redirect to="/admin/dashboard" />
+        </Route>
+      </Switch>
+    </AdminLayout>
+  );
+}
+
 function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <TooltipProvider>
-        <DocumentHead />
-        <FloatingAssistant />
-        <AdminProvider>
-          <BusinessProvider>
-            <AppContent />
-          </BusinessProvider>
-        </AdminProvider>
+        <BusinessProvider>
+          <AdminAuthProvider>
+            <AdminProvider>
+              <Switch>
+                {/* Admin routes */}
+                <Route path="/admin">
+                  <AdminRoutes />
+                </Route>
+                
+                {/* Main app routes */}
+                <Route>
+                  <AppContent />
+                </Route>
+              </Switch>
+              <Toaster />
+              <FloatingAssistant />
+            </AdminProvider>
+          </AdminAuthProvider>
+        </BusinessProvider>
       </TooltipProvider>
-      <Toaster />
     </QueryClientProvider>
   );
 }
