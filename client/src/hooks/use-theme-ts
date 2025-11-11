@@ -1,0 +1,51 @@
+// client/src/hooks/use-theme.ts
+import { useState, useEffect } from 'react'
+
+type Theme = 'light' | 'dark' | 'system'
+
+export function useTheme() {
+  const [theme, setTheme] = useState<Theme>('light')
+  const [isMounted, setIsMounted] = useState(false)
+
+  // Initialize theme from localStorage or system preference
+  useEffect(() => {
+    const savedTheme = localStorage.getItem('theme') as Theme | null
+    const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches
+
+    if (savedTheme === 'system' || (!savedTheme && systemPrefersDark)) {
+      setTheme('dark')
+    } else if (savedTheme) {
+      setTheme(savedTheme)
+    }
+    
+    setIsMounted(true)
+  }, [])
+
+  // Apply theme class to document element
+  useEffect(() => {
+    const root = window.document.documentElement
+    
+    if (theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      root.classList.add('dark')
+    } else {
+      root.classList.remove('dark')
+    }
+  }, [theme])
+
+  const setThemeWithSave = (newTheme: Theme) => {
+    setTheme(newTheme)
+    localStorage.setItem('theme', newTheme)
+  }
+
+  const toggleTheme = () => {
+    setThemeWithSave(theme === 'dark' ? 'light' : 'dark')
+  }
+
+  return {
+    theme,
+    setTheme: setThemeWithSave,
+    toggleTheme,
+    isMounted,
+    isDark: theme === 'dark' || (theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+  }
+}

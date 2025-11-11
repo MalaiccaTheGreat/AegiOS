@@ -1,0 +1,210 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Accounting Models
+model Account {
+  id              String    @id @default(uuid())
+  name            String
+  accountNumber   String    @unique
+  type            AccountType
+  balance         Decimal   @default(0)
+  currency        String    @default("USD")
+  isActive        Boolean   @default(true)
+  businessId      String
+  description     String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  transactions    Transaction[]
+  taxFilings      TaxFiling[]
+  
+  @@index([businessId])
+}
+
+model Transaction {
+  id              String    @id @default(uuid())
+  date            DateTime  @default(now())
+  amount          Decimal
+  type            TransactionType
+  description     String?
+  reference       String?
+  status          TransactionStatus @default(PENDING)
+  taxDeductible   Boolean   @default(false)
+  taxCategory     String?
+  attachments     String[]  // Array of file paths or URLs
+  
+  // Relations
+  accountId       String
+  account         Account   @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  categoryId      String?
+  category        Category? @relation(fields: [categoryId], references: [id])
+  businessId      String
+  business        Business  @relation(fields: [businessId], references: [id])
+  taxFilingId     String?
+  taxFiling       TaxFiling? @relation(fields: [taxFilingId], references: [id])
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([businessId])
+  @@index([accountId])
+  @@index([categoryId])
+  @@index([date])
+}
+
+model Category {
+  id              String    @id @default(uuid())
+  name            String
+  type            String    // INCOME, EXPENSE, ASSET, LIABILITY, EQUITY
+  description     String?
+  taxDeductible   Boolean   @default(false)
+  businessId      String
+  business        Business  @relation(fields: [businessId], references: [id])
+  transactions    Transaction[]
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@unique([name, businessId])
+  @@index([businessId])
+}
+
+model TaxFiling {
+  id              String    @id @default(uuid())
+  type            String    // INCOME_TAX, SALES_TAX, VAT, etc.
+  period          String    // e.g., "Q1 2023", "2023"
+  dueDate         DateTime
+  status          TaxFilingStatus @default(PENDING)
+  amountDue       Decimal   @default(0)
+  amountPaid      Decimal   @default(0)
+  paymentAccountId String?
+  paymentAccount  Account?  @relation("TaxPaymentAccount", fields: [paymentAccountId], references: [id])
+  taxCategoryId   String?
+  taxCategory     Category? @relation(fields: [taxCategoryId], references: [id])
+  businessId      String
+  business        Business  @relation(fields: [businessId], references: [id])
+  transactions    Transaction[]
+  payments        Payment[]
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([businessId])
+  @@index([dueDate])
+  @@index([status])
+}
+
+model Payment {
+  id              String    @id @default(uuid())
+  amount          Decimal
+  date            DateTime  @default(now())
+  method          PaymentMethod
+  referenceNumber String?
+  notes           String?
+  taxFilingId     String
+  taxFiling       TaxFiling @relation(fields: [taxFilingId], references: [id], onDelete: Cascade)
+  businessId      String
+  business        Business  @relation(fields: [businessId], references: [id])
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([businessId])
+  @@index([taxFilingId])
+}
+
+model FinancialReport {
+  id              String    @id @default(uuid())
+  type            ReportType
+  title           String
+  description     String?
+  periodStart     DateTime
+  periodEnd       DateTime
+  fileUrl         String?   // URL to the generated report file
+  data            Json?     // Raw report data in JSON format
+  businessId      String
+  business        Business  @relation(fields: [businessId], references: [id])
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([businessId])
+  @@index([type])
+}
+
+// Enums
+enum AccountType {
+  ASSET
+  LIABILITY
+  EQUITY
+  REVENUE
+  EXPENSE
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+  TRANSFER
+  ADJUSTMENT
+}
+
+enum TransactionStatus {
+  PENDING
+  CLEARED
+  RECONCILED
+  VOIDED
+}
+
+enum TaxFilingStatus {
+  DRAFT
+  PENDING
+  FILED
+  PAID
+  OVERDUE
+  PARTIALLY_PAID
+  CANCELLED
+}
+
+enum PaymentMethod {
+  CASH
+  CHECK
+  CREDIT_CARD
+  BANK_TRANSFER
+  DEBIT_CARD
+  PAYPAL
+  OTHER
+}
+
+enum ReportType {
+  INCOME_STATEMENT
+  BALANCE_SHEET
+  CASH_FLOW
+  TAX
+  GENERAL_LEDGER
+  TRIAL_BALANCE
+  AGING_REPORT
+  CUSTOM
+}
+
+// Business model (should already exist in your schema)
+model Business {
+  id              String           @id @default(uuid())
+  name            String
+  // ... other business fields ...
+  
+  // Accounting relations
+  accounts        Account[]
+  transactions    Transaction[]
+  categories      Category[]
+  taxFilings      TaxFiling[]
+  financialReports FinancialReport[]
+  payments        Payment[]
+}
