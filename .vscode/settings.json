@@ -1,0 +1,24 @@
+{
+  "editor.quickSuggestions": {
+    "strings": true
+  },
+  "tailwindCSS.includeLanguages": {
+    "plaintext": "html"
+  },
+  "css.validate": false,
+  "editor.codeActionsOnSave": {
+    "source.fixAll": true
+  },
+  "files.associations": {
+    "*.css": "tailwindcss"
+  },
+  "tailwindCSS.emmetCompletions": true,
+  "emmet.includeLanguages": {
+    "javascript": "javascriptreact"
+  },
+  "tailwindCSS.experimental.classRegex": [
+    "class\\w*\\s*:?\\s*\\"([^\\"]*)\\"",
+    "class\\w*\\s*:?\\s*'([^']*)'",
+    "class\\w*\\s*:?\\s*`([^`]*)`"
+  ]
+}

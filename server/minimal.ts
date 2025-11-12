@@ -3,11 +3,9 @@ import http from 'http';
 import { createPool } from 'mysql2/promise';
 import { drizzle } from 'drizzle-orm/mysql2';
 import type { MySql2Database } from 'drizzle-orm/mysql2';
+import * as schema from '../shared/schema.js';
 
-interface DatabaseSchema {
-  // Define your schema types here
-  // Example: users: typeof users;
-}
+type DatabaseSchema = typeof schema;
 
 let db: MySql2Database<DatabaseSchema>;
 
@@ -16,13 +14,12 @@ async function initializeApp() {
   let schema: any;
   try {
     try {
-      // Try with .js extension first (for built files)
-      const schemaModule = await import('./shared/schema.js');
-      schema = schemaModule.default || schemaModule;
-    } catch (e) {
-      // Try without extension (for TypeScript source)
-      const schemaModule = await import('./shared/schema');
-      schema = schemaModule.default || schemaModule;
+      // Try to import the schema directly
+      const schemaModule = await import('../shared/schema.js');
+      schema = schemaModule;
+    } catch (error) {
+      console.error('Failed to load schema:', error);
+      throw error;
     }
 
     const app = express();
@@ -39,7 +36,44 @@ async function initializeApp() {
     } = process.env;
 
     // Create database connection
+    // Add a basic health check endpoint
+    app.get('/health', (req: Request, res: Response) => {
+      res.json({ status: 'ok', message: 'Server is running' });
+    });
+
+    // Start the server first
+    server.listen(PORT, () => {
+      console.log(`Server is running on http://localhost:${PORT}`);
+      console.log(`Health check: http://localhost:${PORT}/health`);
+    });
+
+    // Try to connect to the database
     try {
+      console.log('Attempting to connect to database...');
+      console.log(`Connecting to: ${DB_USER}@${DB_HOST}:${DB_PORT}/${DB_NAME}`);
+      
+      // First, try to connect without specifying the database to check if MySQL is running
+      const adminConnection = await createPool({
+        host: DB_HOST,
+        port: parseInt(DB_PORT),
+        user: DB_USER,
+        password: DB_PASSWORD,
+        waitForConnections: true,
+        connectionLimit: 1,
+      });
+
+      // Check if the database exists, create it if it doesn't
+      try {
+        await adminConnection.query(`CREATE DATABASE IF NOT EXISTS \`${DB_NAME}\`;`);
+        console.log(`Database '${DB_NAME}' is ready`);
+      } catch (dbError) {
+        console.error('Error creating database:', dbError);
+        throw dbError;
+      } finally {
+        await adminConnection.end();
+      }
+
+      // Now connect to the specific database
       const connection = createPool({
         host: DB_HOST,
         port: parseInt(DB_PORT),
@@ -48,9 +82,12 @@ async function initializeApp() {
         database: DB_NAME,
         waitForConnections: true,
         connectionLimit: 10,
-        queueLimit: 0,
-        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : undefined
+        multipleStatements: true,
       });
+
+      // Test the connection
+      await connection.getConnection();
+      console.log('Successfully connected to the database');
 
       db = drizzle(connection, { schema, mode: 'default' });
       console.log('Database connection established');

@@ -1,7 +1,9 @@
-import { pgTable, text, serial, integer, decimal, timestamp, boolean, date } from "drizzle-orm/pg-core";
+import { mysqlTable, text, serial, int, decimal, datetime, boolean, date, varchar } from "drizzle-orm/mysql-core";
 import { relations } from "drizzle-orm";
 import { createInsertSchema, createSelectSchema } from "drizzle-zod";
 import { z } from "zod";
+
+// Project status enum
 
 // Project status enum
 export const ProjectStatus = {
@@ -15,29 +17,29 @@ export const ProjectStatus = {
 export type ProjectStatusType = typeof ProjectStatus[keyof typeof ProjectStatus];
 
 // Business table
-export const businesses = pgTable("businesses", {
+export const businesses = mysqlTable("businesses", {
   id: serial("id").primaryKey(),
-  name: text("name").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
   industry: text("industry").notNull(),
-  address: text("address"),
-  phone: text("phone"),
-  email: text("email"),
+  address: text,
+  phone: varchar("phone", { length: 50 }),
+  email: varchar("email", { length: 255 }),
   logo_url: text("logo_url"),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  created_at: datetime('created_at').notNull().default(new Date()),
+  updated_at: datetime('updated_at').notNull().default(new Date()),
 });
 
 // Services/Inventory table
-export const services = pgTable("services", {
+export const services = mysqlTable("services", {
   id: serial("id").primaryKey(),
-  business_id: integer("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
-  name: text("name").notNull(),
+  business_id: int("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
   category: text("category").notNull(),
   price: decimal("price", { precision: 10, scale: 2 }).notNull(),
-  description: text("description"),
+  description: text,
   is_active: boolean("is_active").default(true).notNull(),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  created_at: datetime('created_at').notNull().default(new Date()),
+  updated_at: datetime('updated_at').notNull().default(new Date()),
 });
 
 export const insertServiceSchema = createInsertSchema(services, {
@@ -51,147 +53,147 @@ export const insertServiceSchema = createInsertSchema(services, {
 });
 
 // Employees table
-export const employees = pgTable("employees", {
+export const employees = mysqlTable("employees", {
   id: serial("id").primaryKey(),
-  business_id: integer("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  role: text("role").notNull(),
+  business_id: int("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  role: varchar("role", { length: 100 }).notNull(),
   daily_salary: decimal("daily_salary", { precision: 10, scale: 2 }).notNull(),
   overtime_rate: decimal("overtime_rate", { precision: 10, scale: 2 }).notNull(),
   is_active: boolean("is_active").default(true).notNull(),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  created_at: datetime('created_at').notNull().default(new Date()),
+  updated_at: datetime('updated_at').notNull().default(new Date()),
 });
 
 // Projects table
-export const projects = pgTable("projects", {
+export const projects = mysqlTable("projects", {
   id: serial("id").primaryKey(),
-  business_id: integer("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
-  name: text("name").notNull(),
-  description: text("description"),
-  status: text("status").$type<ProjectStatusType>().notNull().default('planning'),
+  business_id: int("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text,
+  status: varchar("status", { length: 50 }).$type<ProjectStatusType>().notNull().default('planning'),
   start_date: date("start_date"),
   target_end_date: date("target_end_date"),
   actual_end_date: date("actual_end_date"),
   budget: decimal("budget", { precision: 12, scale: 2 }),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  created_at: datetime('created_at').notNull().default(new Date()),
+  updated_at: datetime('updated_at').notNull().default(new Date()),
 });
 
 // Time entries table
-export const timeEntries = pgTable("time_entries", {
+export const timeEntries = mysqlTable("time_entries", {
   id: serial("id").primaryKey(),
-  business_id: integer("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
-  project_id: integer("project_id").references(() => projects.id, { onDelete: "set null" }),
-  employee_id: integer("employee_id").references(() => employees.id, { onDelete: "cascade" }).notNull(),
+  business_id: int("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
+  project_id: int("project_id").references(() => projects.id, { onDelete: "set null" }),
+  employee_id: int("employee_id").references(() => employees.id, { onDelete: "cascade" }).notNull(),
   date: date("date").notNull(),
   start_time: text("start_time").notNull(),
   end_time: text("end_time").notNull(),
   total_hours: decimal("total_hours", { precision: 4, scale: 2 }).notNull(),
   project_name: text("project_name"),
-  notes: text("notes"),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  notes: text,
+  created_at: datetime('created_at').notNull().default(new Date()),
+  updated_at: datetime('updated_at').notNull().default(new Date()),
 });
 
 // Clients table
-export const clients = pgTable("clients", {
+export const clients = mysqlTable("clients", {
   id: serial("id").primaryKey(),
-  business_id: integer("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
-  name: text("name").notNull(),
-  email: text("email").notNull(),
-  phone: text("phone"),
-  address: text("address"),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  business_id: int("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  phone: varchar("phone", { length: 50 }),
+  address: text,
+  created_at: datetime('created_at').notNull().default(new Date()),
+  updated_at: datetime('updated_at').notNull().default(new Date()),
 });
 
 // Quotations table
-export const quotations = pgTable("quotations", {
+export const quotations = mysqlTable("quotations", {
   id: serial("id").primaryKey(),
-  business_id: integer("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
-  client_id: integer("client_id").references(() => clients.id, { onDelete: "cascade" }).notNull(),
-  quotation_number: text("quotation_number").notNull(),
-  status: text("status").notNull().default("pending"), // pending, approved, rejected
+  business_id: int("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
+  client_id: int("client_id").references(() => clients.id, { onDelete: "cascade" }).notNull(),
+  quotation_number: varchar("quotation_number", { length: 100 }).notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, approved, rejected
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
   tax_amount: decimal("tax_amount", { precision: 10, scale: 2 }).notNull(),
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
-  notes: text("notes"),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),
+  notes: text,
   valid_until: date("valid_until"),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  created_at: datetime('created_at').notNull().default(new Date()),
+  updated_at: datetime('updated_at').notNull().default(new Date()),
 });
 
 // Quotation items table
-export const quotationItems = pgTable("quotation_items", {
+export const quotationItems = mysqlTable("quotation_items", {
   id: serial("id").primaryKey(),
-  quotationId: integer("quotation_id").references(() => quotations.id).notNull(),
-  serviceId: integer("service_id").references(() => services.id).notNull(),
-  quantity: integer("quantity").notNull(),
-  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  quotation_id: int("quotation_id").references(() => quotations.id).notNull(),
+  service_id: int("service_id").references(() => services.id).notNull(),
+  quantity: int("quantity").notNull(),
+  unit_price: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),
 });
 
 // Invoices table
-export const invoices = pgTable("invoices", {
+export const invoices = mysqlTable("invoices", {
   id: serial("id").primaryKey(),
-  business_id: integer("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
-  project_id: integer("project_id").references(() => projects.id, { onDelete: "set null" }),
-  quotation_id: integer("quotation_id").references(() => quotations.id, { onDelete: "set null" }),
-  client_id: integer("client_id").references(() => clients.id, { onDelete: "cascade" }).notNull(),
-  invoice_number: text("invoice_number").notNull(),
-  status: text("status").notNull().default("pending"), // pending, paid, overdue
+  business_id: int("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
+  project_id: int("project_id").references(() => projects.id, { onDelete: "set null" }),
+  quotation_id: int("quotation_id").references(() => quotations.id, { onDelete: "set null" }),
+  client_id: int("client_id").references(() => clients.id, { onDelete: "cascade" }).notNull(),
+  invoice_number: varchar("invoice_number", { length: 100 }).notNull(),
+  status: varchar("status", { length: 50 }).notNull().default("pending"), // pending, paid, overdue
   subtotal: decimal("subtotal", { precision: 10, scale: 2 }).notNull(),
   tax_amount: decimal("tax_amount", { precision: 10, scale: 2 }).notNull(),
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),
   due_date: date("due_date"),
   paid_date: date("paid_date"),
-  notes: text("notes"),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  notes: text,
+  created_at: datetime('created_at').notNull().default(new Date()),
+  updated_at: datetime('updated_at').notNull().default(new Date()),
 });
 
 // Invoice items table
-export const invoiceItems = pgTable("invoice_items", {
+export const invoiceItems = mysqlTable("invoice_items", {
   id: serial("id").primaryKey(),
-  invoiceId: integer("invoice_id").references(() => invoices.id).notNull(),
-  serviceId: integer("service_id").references(() => services.id).notNull(),
-  quantity: integer("quantity").notNull(),
-  unitPrice: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
-  total: decimal("total", { precision: 10, scale: 2 }).notNull(),
+  invoice_id: int("invoice_id").references(() => invoices.id).notNull(),
+  service_id: int("service_id").references(() => services.id).notNull(),
+  quantity: int("quantity").notNull(),
+  unit_price: decimal("unit_price", { precision: 10, scale: 2 }).notNull(),
+  total: decimal("total", { precision: 10, scale: 2 }).notNull().default("0"),
 });
 
 // Payroll records table
-export const payrollRecords = pgTable("payroll_records", {
+export const payrollRecords = mysqlTable("payroll_records", {
   id: serial("id").primaryKey(),
-  business_id: integer("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
-  employee_id: integer("employee_id").references(() => employees.id, { onDelete: "cascade" }).notNull(),
-  month: integer("month").notNull(),
-  year: integer("year").notNull(),
-  base_salary: decimal("base_salary", { precision: 10, scale: 2 }).notNull(),
-  overtime_hours: decimal("overtime_hours", { precision: 10, scale: 2 }).default("0").notNull(),
-  overtime_pay: decimal("overtime_pay", { precision: 10, scale: 2 }).default("0").notNull(),
-  deductions: decimal("deductions", { precision: 10, scale: 2 }).default("0").notNull(),
-  bonus: decimal("bonus", { precision: 10, scale: 2 }).default("0").notNull(),
+  business_id: int("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
+  employee_id: int("employee_id").references(() => employees.id, { onDelete: "cascade" }).notNull(),
+  month: int("month").notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  base_salary: decimal("base_salary", { precision: 10, scale: 2 }).notNull().default(0),
+  overtime_hours: decimal("overtime_hours", { precision: 10, scale: 2 }).notNull().default("0"),
+  overtime_pay: decimal("overtime_pay", { precision: 10, scale: 2 }).notNull().default("0"),
+  deductions: decimal("deductions", { precision: 10, scale: 2 }).notNull().default("0"),
+  bonus: decimal("bonus", { precision: 10, scale: 2 }).notNull().default("0"),
   net_pay: decimal("net_pay", { precision: 10, scale: 2 }).notNull(),
   payment_date: date("payment_date").notNull(),
-  payment_method: text("payment_method").notNull(),
-  notes: text("notes"),
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  payment_method: varchar("payment_method", { length: 100 }).notNull(),
+  notes: text,
+  created_at: datetime('created_at').notNull().default(new Date()),
+  updated_at: datetime('updated_at').notNull().default(new Date()),
 });
 
 // Email templates table
-export const emailTemplates = pgTable("email_templates", {
+export const emailTemplates = mysqlTable("email_templates", {
   id: serial("id").primaryKey(),
-  business_id: integer("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
-  name: text("name").notNull(),
-  subject: text("subject").notNull(),
-  body: text("body").notNull(),
-  type: text("type").notNull(), // quotation_followup, invoice_reminder, project_update
-  created_at: timestamp("created_at").defaultNow().notNull(),
-  updated_at: timestamp("updated_at").defaultNow().notNull(),
+  business_id: int("business_id").references(() => businesses.id, { onDelete: "cascade" }).notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  subject: varchar("subject", { length: 255 }).notNull(),
+  body: text('body').notNull(),
+  type: varchar("type", { length: 50 }).notNull(), // quotation_followup, invoice_reminder, project_update
+  created_at: datetime('created_at').notNull().default(new Date()),
+  updated_at: datetime('updated_at').notNull().default(new Date()),
 });
 
 // Relations
@@ -254,6 +256,8 @@ export const invoiceItemsRelations = relations(invoiceItems, ({ one }) => ({
     references: [services.id],
   }),
 }));
+
+// ... (rest of the code remains the same)
 
 // Insert schemas
 export const insertProjectSchema = createInsertSchema(projects, {
