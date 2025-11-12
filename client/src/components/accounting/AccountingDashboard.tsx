@@ -86,7 +86,7 @@ const AccountingDashboard: React.FC = () => {
     };
 
     fetchData();
-  }, [businessId, api]);
+  }, [businessId]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);

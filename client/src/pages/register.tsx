@@ -45,7 +45,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [step, setStep] = useState(1);
   const { register } = useAuth();
-  const [location, navigate] = useLocation();
+  const [location, setLocation] = useLocation();
   
   // Add animated gradient background effect
   useEffect(() => {
@@ -97,7 +97,7 @@ export default function RegisterPage() {
         formData.lastName
       );
       toast.success('Registration successful! Please check your email to verify your account.');
-      navigate('/login');
+      setLocation('/login');
     } catch (err) {
       console.error('Registration error:', err);
       setError(err instanceof Error ? err.message : 'Failed to create account. Please try again.');

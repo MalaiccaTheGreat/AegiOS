@@ -1,4 +1,4 @@
-import { Route, useLocation, useRoute, Switch } from "wouter";
+import { Route, useLocation, useRoute, Switch, Redirect } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,8 +6,18 @@ import { BusinessProvider, useBusiness } from "@/contexts/BusinessContext";
 import { AdminProvider } from "@/contexts/AdminContext";
 import { AdminAuthProvider, useAdminAuth } from "@/contexts/AdminAuthContext";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import AdminLogin from "@/pages/admin/login";
-import AdminDashboard from "@/pages/admin/dashboard";
+import { AdminLogin } from "@/pages/admin/login";
+import { AdminDashboard } from "@/pages/admin/dashboard";
+import AdminAccounting from "@/pages/admin/accounting";
+import AdminProjects from "@/pages/admin/projects";
+import AdminInventory from "@/pages/admin/inventory";
+import AdminEmployees from "@/pages/admin/employees";
+import AdminTimeTracking from "@/pages/admin/time-tracking";
+import AdminQuotations from "@/pages/admin/quotations";
+import AdminInvoices from "@/pages/admin/invoices";
+import AdminPayroll from "@/pages/admin/payroll";
+import AdminReports from "@/pages/admin/reports";
+import AdminEmail from "@/pages/admin/email";
 import { useEffect, useState } from "react";
 import Layout from "@/components/layout/layout";
 import HomePage from "@/pages/home";
@@ -29,6 +39,7 @@ import { ProjectDetailPageWithProviders } from "@/pages/projects/[id]";
 import { NewProjectPageWithProviders } from "@/pages/projects/new";
 import { DocumentHead } from "@/components/seo/DocumentHead";
 import FloatingAssistant from "@/components/ai/FloatingAssistant";
+import { SidebarProvider } from "./contexts/SidebarContext";
 
 // Create a single instance of QueryClient
 const queryClient = new QueryClient();
@@ -88,65 +99,30 @@ function AppContent() {
         <Route path="/login" component={LoginPage} />
         <Route path="/register" component={RegisterPage} />
         
-        {/* Protected Routes */}
-        <Route path="/dashboard">
+        {/* Main App Routes - Protected */}
+        <Route path="/app">
           <ProtectedRoute>
-            <Dashboard />
+            <Layout>
+              <Switch>
+                <Route path="/app/dashboard" component={Dashboard} />
+                <Route path="/app/inventory" component={Inventory} />
+                <Route path="/app/employees" component={Employees} />
+                <Route path="/app/time-tracking" component={TimeTracking} />
+                <Route path="/app/quotations" component={Quotations} />
+                <Route path="/app/invoices" component={Invoices} />
+                <Route path="/app/payroll" component={Payroll} />
+                <Route path="/app/reports" component={Reports} />
+                <Route path="/app/email" component={Email} />
+                <Route path="/app/business/setup" component={BusinessSetup} />
+                <Route path="/app/projects" component={ProjectsPageWithProviders} />
+                <Route path="/app/projects/new" component={NewProjectPageWithProviders} />
+                <Route path="/app/projects/:id" component={ProjectDetailPageWithProviders} />
+                <Route path="/app/admin/:rest*" component={AdminRoutes} />
+                <Route><Redirect to="/app/dashboard" /></Route>
+              </Switch>
+            </Layout>
           </ProtectedRoute>
         </Route>
-        
-        <Route path="/inventory">
-          <ProtectedRoute>
-            <Inventory />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/employees">
-          <ProtectedRoute>
-            <Employees />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/time-tracking">
-          <ProtectedRoute>
-            <TimeTracking />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/quotations">
-          <ProtectedRoute>
-            <Quotations />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/invoices">
-          <ProtectedRoute>
-            <Invoices />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/payroll">
-          <ProtectedRoute>
-            <Payroll />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/reports">
-          <ProtectedRoute>
-            <Reports />
-          </ProtectedRoute>
-        </Route>
-        
-        <Route path="/email">
-          <ProtectedRoute>
-            <Email />
-          </ProtectedRoute>
-        </Route>
-        
-        {/* Projects */}
-        <Route path="/projects" component={ProjectsPageWithProviders} />
-        <Route path="/projects/new" component={NewProjectPageWithProviders} />
-        <Route path="/projects/:id" component={ProjectDetailPageWithProviders} />
         
         {/* 404 - Not Found */}
         <Route component={NotFound} />
@@ -169,7 +145,8 @@ function AdminRoutes() {
       return;
     }
 
-    if (location === '/admin') {
+    // Redirect /admin to /admin/dashboard
+    if (location === '/admin' || location === '/admin/') {
       navigate('/admin/dashboard');
       return;
     }
@@ -177,6 +154,11 @@ function AdminRoutes() {
 
   if (loading) {
     return <div>Loading...</div>;
+  }
+
+  // If on login page and already authenticated, redirect to dashboard
+  if (isAuthenticated && location.startsWith('/admin/login')) {
+    return <Redirect to="/admin/dashboard" />;
   }
 
   return (
@@ -187,7 +169,56 @@ function AdminRoutes() {
           <AdminDashboard />
         </AdminLayout>
       </Route>
-      {/* Add more admin routes here */}
+      <Route path="/admin/accounting">
+        <AdminLayout>
+          <AdminAccounting />
+        </AdminLayout>
+      </Route>
+      <Route path="/admin/projects">
+        <AdminLayout>
+          <AdminProjects />
+        </AdminLayout>
+      </Route>
+      <Route path="/admin/inventory">
+        <AdminLayout>
+          <AdminInventory />
+        </AdminLayout>
+      </Route>
+      <Route path="/admin/employees">
+        <AdminLayout>
+          <AdminEmployees />
+        </AdminLayout>
+      </Route>
+      <Route path="/admin/time-tracking">
+        <AdminLayout>
+          <AdminTimeTracking />
+        </AdminLayout>
+      </Route>
+      <Route path="/admin/quotations">
+        <AdminLayout>
+          <AdminQuotations />
+        </AdminLayout>
+      </Route>
+      <Route path="/admin/invoices">
+        <AdminLayout>
+          <AdminInvoices />
+        </AdminLayout>
+      </Route>
+      <Route path="/admin/payroll">
+        <AdminLayout>
+          <AdminPayroll />
+        </AdminLayout>
+      </Route>
+      <Route path="/admin/reports">
+        <AdminLayout>
+          <AdminReports />
+        </AdminLayout>
+      </Route>
+      <Route path="/admin/email">
+        <AdminLayout>
+          <AdminEmail />
+        </AdminLayout>
+      </Route>
       <Route path="/admin/*">
         <AdminLayout>
           <AdminDashboard />
@@ -204,19 +235,11 @@ function App() {
         <BusinessProvider>
           <AdminAuthProvider>
             <AdminProvider>
-              <Switch>
-                {/* Admin routes */}
-                <Route path="/admin">
-                  <AdminRoutes />
-                </Route>
-                
-                {/* Main app routes */}
-                <Route>
-                  <AppContent />
-                </Route>
-              </Switch>
-              <Toaster />
-              <FloatingAssistant />
+              <SidebarProvider>
+                <AppContent />
+                <Toaster />
+                <FloatingAssistant />
+              </SidebarProvider>
             </AdminProvider>
           </AdminAuthProvider>
         </BusinessProvider>

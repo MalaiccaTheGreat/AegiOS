@@ -1,12 +1,12 @@
 import { useLocation } from 'wouter';
-import { AdminSidebar } from './AdminSidebar';
+import { Sidebar } from '../layout/sidebar';
 import { AdminHeader } from './AdminHeader';
 
 export const AdminLayout: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const [location] = useLocation();
   return (
     <div className="flex h-screen bg-gray-50 dark:bg-gray-900">
-      <AdminSidebar />
+      <Sidebar />
       <div className="flex-1 flex flex-col overflow-hidden">
         <AdminHeader />
         <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 dark:bg-gray-900">

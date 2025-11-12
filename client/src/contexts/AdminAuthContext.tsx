@@ -24,7 +24,7 @@ const AdminAuthContext = createContext<AdminAuthContextType | undefined>(undefin
 export function AdminAuthProvider({ children }: { children: ReactNode }) {
   const [admin, setAdmin] = useState<AdminUser | null>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [location, navigate] = useLocation();
+  const [, setLocation] = useLocation();
 
   useEffect(() => {
     // Check for existing admin session
@@ -77,7 +77,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
       localStorage.setItem('admin_token', data.token);
       setAdmin(data.user);
       toast.success('Admin login successful');
-      navigate('/admin/dashboard');
+      setLocation('/app/admin/dashboard');
     } catch (error) {
       console.error('Admin login failed:', error);
       toast.error('Invalid admin credentials');
@@ -91,7 +91,7 @@ export function AdminAuthProvider({ children }: { children: ReactNode }) {
     localStorage.removeItem('admin_token');
     setAdmin(null);
     toast.success('Logged out from admin panel');
-    navigate('/admin/login');
+    setLocation('/app/admin/login');
   };
 
   const hasPermission = (permission: string): boolean => {

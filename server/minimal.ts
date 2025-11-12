@@ -29,29 +29,28 @@ async function initializeApp() {
     const server = http.createServer(app);
     const PORT = process.env.PORT || 3001;
 
-// Database configuration
-const {
-  DB_HOST = 'localhost',
-  DB_PORT = '3306',
-  DB_USER = 'root',
-  DB_PASSWORD = '',
-  DB_NAME = 'aegios'
-} = process.env;
+    // Database configuration
+    const {
+      DB_HOST = 'localhost',
+      DB_PORT = '3306',
+      DB_USER = 'root',
+      DB_PASSWORD = '',
+      DB_NAME = 'aegios'
+    } = process.env;
 
-// Create database connection
-let db;
-try {
-  const connection = createPool({
-    host: DB_HOST,
-    port: parseInt(DB_PORT),
-    user: DB_USER,
-    password: DB_PASSWORD,
-    database: DB_NAME,
-    waitForConnections: true,
-    connectionLimit: 10,
-    queueLimit: 0,
-    ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : undefined
-  });
+    // Create database connection
+    try {
+      const connection = createPool({
+        host: DB_HOST,
+        port: parseInt(DB_PORT),
+        user: DB_USER,
+        password: DB_PASSWORD,
+        database: DB_NAME,
+        waitForConnections: true,
+        connectionLimit: 10,
+        queueLimit: 0,
+        ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: true } : undefined
+      });
 
       db = drizzle(connection, { schema, mode: 'default' });
       console.log('Database connection established');
