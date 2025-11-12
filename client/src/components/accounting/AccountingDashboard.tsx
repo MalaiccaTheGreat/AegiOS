@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useRoute, useLocation } from 'wouter';
 import { 
   Box, 
   Typography, 
@@ -17,21 +17,35 @@ import {
   Tabs,
   Tab,
   useTheme,
-  useMediaQuery
+  useMediaQuery,
+  IconButton,
+  Menu,
+  MenuItem
 } from '@mui/material';
 import {
   AccountBalance as AccountBalanceIcon,
+  Assessment as AssessmentIcon,
   Receipt as ReceiptIcon,
-  AccountTree as ChartOfAccountsIcon,
+  ShowChart as ShowChartIcon,
+  AccountTree as AccountTreeIcon,
+  Settings as SettingsIcon,
+  Add as AddIcon,
+  MoreVert as MoreVertIcon,
+  TrendingUp as TrendingUpIcon,
+  TrendingDown as TrendingDownIcon,
+  AccountBalanceWallet as AccountBalanceWalletIcon,
+  AttachMoney as AttachMoneyIcon,
+  Edit as EditIcon,
+  Delete as DeleteIcon,
+  Visibility as VisibilityIcon,
   CompareArrows as ReconciliationIcon,
-  Assessment as ReportsIcon,
   Calculate as TaxIcon,
   Timeline as TrendsIcon,
   Notifications as AlertsIcon,
-  Add as AddIcon,
   ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
 import { useApi } from '../../hooks/useApi';
+import { toast } from 'sonner';
 
 // Sample data - in a real app, this would come from the API
 const quickStats = [
@@ -49,8 +63,9 @@ const recentTransactions = [
 ];
 
 const AccountingDashboard: React.FC = () => {
-  const { businessId } = useParams<{ businessId: string }>();
-  const navigate = useNavigate();
+  const [match, params] = useRoute('/business/:businessId/accounting');
+  const businessId = params?.businessId;
+  const [location, navigate] = useLocation();
   const api = useApi();
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);

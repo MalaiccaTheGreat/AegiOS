@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -31,7 +32,6 @@ import {
 import { BusinessHealthCard } from "@/components/ai/BusinessHealthCard";
 import { InsightsPanel } from "@/components/ai/InsightsPanel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useState } from "react";
 import TimeModal from "@/components/modals/time-modal";
 import QuotationModal from "@/components/modals/quotation-modal";
 import EmailModal from "@/components/modals/email-modal";

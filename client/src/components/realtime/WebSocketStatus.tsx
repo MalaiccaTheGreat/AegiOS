@@ -15,6 +15,9 @@ export function WebSocketStatus() {
     downtime: 0,
     reconnects: 0,
   });
+  
+  // Use connectionState from context if available
+  const { lastMessageAt, ping } = connectionState || {};
 
   // Track connection status changes
   useEffect(() => {

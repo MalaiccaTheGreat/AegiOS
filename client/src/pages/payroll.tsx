@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+// Input component removed as it's not being used
 import { Label } from "@/components/ui/label";
 import {
   Table,
@@ -22,7 +22,35 @@ import {
 import { CreditCard, Calculator, Download, Calendar } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { apiRequest } from "@/lib/queryClient";
-import type { PayrollRecord, Employee } from "@shared/schema";
+interface Employee {
+  id: string | number;  // Make id accept both string and number
+  firstName: string;
+  lastName: string;
+  email: string;
+  role: string;
+  hourlyRate?: number;
+  salary?: number;
+  // Add other employee properties as needed
+}
+
+interface PayrollRecord {
+  id: string;
+  employeeId: string | number;
+  month: number;
+  year: number;
+  regularHours?: number | string;
+  overtimeHours?: number | string;
+  regularPay?: number | string;
+  overtimePay?: number | string;
+  totalPay?: number | string;
+  baseSalary?: number;
+  bonus?: number;
+  deductions?: number;
+  netPay?: number;
+  status?: 'pending' | 'processed' | 'paid';
+  paymentDate?: string;
+  // Add other payroll record properties as needed
+}
 
 export default function Payroll() {
   const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
@@ -62,14 +90,14 @@ export default function Payroll() {
     },
   });
 
-  const getEmployeeName = (employeeId: number) => {
-    const employee = employees.find(emp => emp.id === employeeId);
-    return employee ? employee.name : "Unknown Employee";
+  const getEmployeeName = (employeeId: string | number) => {
+    const employee = employees.find(emp => emp.id == employeeId); // Use loose equality for type flexibility
+    return employee ? `${employee.firstName} ${employee.lastName}` : "Unknown Employee";
   };
 
-  const getEmployeeRole = (employeeId: number) => {
-    const employee = employees.find(emp => emp.id === employeeId);
-    return employee ? employee.role : "Unknown Role";
+  const getEmployeeRole = (employeeId: string | number) => {
+    const employee = employees.find(emp => emp.id == employeeId); // Use loose equality for type flexibility
+    return employee?.role || "Unknown Role";
   };
 
   const months = [
@@ -91,11 +119,26 @@ export default function Payroll() {
 
   const payrollStats = {
     totalEmployees: payrollRecords.length,
-    totalRegularHours: payrollRecords.reduce((sum, record) => sum + parseFloat(record.regularHours), 0),
-    totalOvertimeHours: payrollRecords.reduce((sum, record) => sum + parseFloat(record.overtimeHours), 0),
-    totalRegularPay: payrollRecords.reduce((sum, record) => sum + parseFloat(record.regularPay), 0),
-    totalOvertimePay: payrollRecords.reduce((sum, record) => sum + parseFloat(record.overtimePay), 0),
-    totalPay: payrollRecords.reduce((sum, record) => sum + parseFloat(record.totalPay), 0),
+    totalRegularHours: payrollRecords.reduce((sum, record) => {
+      const hours = typeof record.regularHours === 'number' ? record.regularHours : parseFloat(record.regularHours || '0');
+      return sum + (isNaN(hours) ? 0 : hours);
+    }, 0),
+    totalOvertimeHours: payrollRecords.reduce((sum, record) => {
+      const hours = typeof record.overtimeHours === 'number' ? record.overtimeHours : parseFloat(record.overtimeHours || '0');
+      return sum + (isNaN(hours) ? 0 : hours);
+    }, 0),
+    totalRegularPay: payrollRecords.reduce((sum, record) => {
+      const pay = typeof record.regularPay === 'number' ? record.regularPay : parseFloat(record.regularPay || '0');
+      return sum + (isNaN(pay) ? 0 : pay);
+    }, 0),
+    totalOvertimePay: payrollRecords.reduce((sum, record) => {
+      const pay = typeof record.overtimePay === 'number' ? record.overtimePay : parseFloat(record.overtimePay || '0');
+      return sum + (isNaN(pay) ? 0 : pay);
+    }, 0),
+    totalPay: payrollRecords.reduce((sum, record) => {
+      const pay = typeof record.totalPay === 'number' ? record.totalPay : parseFloat(record.totalPay || '0');
+      return sum + (isNaN(pay) ? 0 : pay);
+    }, 0),
   };
 
   if (isLoading) {
@@ -292,31 +335,35 @@ export default function Payroll() {
                       <div className="flex items-center space-x-3">
                         <div className="w-8 h-8 bg-primary rounded-full flex items-center justify-center">
                           <span className="text-white text-sm font-medium">
-                            {getEmployeeName(record.employeeId).split(' ').map(n => n[0]).join('')}
+                            {getEmployeeName(record.employeeId)
+                              .split(' ')
+                              .filter(Boolean)
+                              .map((n: string) => n[0]?.toUpperCase() || '')
+                              .join('')}
                           </span>
-                        </div>
+                      </div>
                         <span className="font-medium">{getEmployeeName(record.employeeId)}</span>
                       </div>
                     </TableCell>
                     <TableCell>{getEmployeeRole(record.employeeId)}</TableCell>
-                    <TableCell>{parseFloat(record.regularHours).toFixed(1)}h</TableCell>
-                    <TableCell>{parseFloat(record.overtimeHours).toFixed(1)}h</TableCell>
+                    <TableCell>{typeof record.regularHours === 'number' ? record.regularHours.toFixed(1) : '0.0'}h</TableCell>
+                    <TableCell>{typeof record.overtimeHours === 'number' ? record.overtimeHours.toFixed(1) : '0.0'}h</TableCell>
                     <TableCell className="font-medium">
-                      ${parseFloat(record.regularPay).toLocaleString()}
+                      ${typeof record.regularPay === 'number' ? record.regularPay.toLocaleString() : '0'}
                     </TableCell>
                     <TableCell className="font-medium">
-                      ${parseFloat(record.overtimePay).toLocaleString()}
+                      ${typeof record.overtimePay === 'number' ? record.overtimePay.toLocaleString() : '0'}
                     </TableCell>
                     <TableCell className="font-bold">
-                      ${parseFloat(record.totalPay).toLocaleString()}
+                      ${typeof record.totalPay === 'number' ? record.totalPay.toLocaleString() : '0'}
                     </TableCell>
-                  </TableRow>
-                ))
-              )}
-            </TableBody>
-          </Table>
-        </CardContent>
-      </Card>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
 
       {/* Payroll Formula Information */}
       <Card>

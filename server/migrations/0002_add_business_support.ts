@@ -1,7 +1,8 @@
+import { Knex } from 'knex';
 import { pgTable, serial, text, timestamp, integer, boolean, pgEnum } from 'drizzle-orm/pg-core';
 import { sql } from 'drizzle-orm';
 
-export async function up(db) {
+export async function up(db: Knex): Promise<void> {
   // Create the businesses table
   await db.run(sql`
     CREATE TABLE IF NOT EXISTS businesses (
@@ -62,7 +63,7 @@ export async function up(db) {
   await db.run(sql`CREATE INDEX IF NOT EXISTS idx_invoices_business_id ON invoices(business_id);`);
 }
 
-export async function down(db) {
+export async function down(db: Knex): Promise<void> {
   // Drop indexes
   await db.run(sql`DROP INDEX IF EXISTS idx_services_business_id;`);
   await db.run(sql`DROP INDEX IF EXISTS idx_employees_business_id;`);

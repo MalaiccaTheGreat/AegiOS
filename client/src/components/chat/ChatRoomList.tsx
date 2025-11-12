@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useChat } from '../../contexts/ChatContext';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'wouter';
 import { FiPlus, FiSearch, FiMessageSquare } from 'react-icons/fi';
 import { formatDistanceToNow } from 'date-fns';
 
@@ -10,7 +10,7 @@ export const ChatRoomList: React.FC = () => {
   const [isCreatingRoom, setIsCreatingRoom] = useState(false);
   const [newRoomName, setNewRoomName] = useState('');
   const [selectedUsers, setSelectedUsers] = useState<Set<string>>(new Set());
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
 
   // Mock users - in a real app, this would come from your API
   const availableUsers = [

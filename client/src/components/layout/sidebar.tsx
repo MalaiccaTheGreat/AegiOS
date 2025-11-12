@@ -33,22 +33,24 @@ export default function Sidebar() {
     <aside className="w-64 bg-white shadow-sm h-screen sticky top-16 border-r border-gray-200">
       <nav className="p-4 space-y-2">
         {navigation.map((item) => {
-          const isActive = location === item.href || (item.href === "/dashboard" && location === "/");
+          const isActive = location === item.href || 
+                         (item.href !== '/' && location.startsWith(item.href)) ||
+                         (item.href === "/dashboard" && location === "/");
           const Icon = item.icon;
           
           return (
-            <Link key={item.name} href={item.href}>
-              <a
-                className={cn(
-                  "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors",
-                  isActive
-                    ? "bg-primary text-white"
-                    : "text-gray-700 hover:bg-gray-100"
-                )}
-              >
-                <Icon size={20} />
-                <span>{item.name}</span>
-              </a>
+            <Link 
+              key={item.name} 
+              href={item.href}
+              className={cn(
+                "flex items-center space-x-3 px-4 py-3 rounded-lg transition-colors block",
+                isActive
+                  ? "bg-primary text-white"
+                  : "text-gray-700 hover:bg-gray-100"
+              )}
+            >
+              <Icon size={20} />
+              <span>{item.name}</span>
             </Link>
           );
         })}

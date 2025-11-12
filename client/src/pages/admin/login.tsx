@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,7 +14,7 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAdminAuth();
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

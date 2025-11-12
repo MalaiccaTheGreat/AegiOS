@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -20,7 +20,7 @@ const mockUsers = [
 
 export default function AdminDashboard() {
   const { admin, logout } = useAdminAuth();
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState(mockUsers);
 

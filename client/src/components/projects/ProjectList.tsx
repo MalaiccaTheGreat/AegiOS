@@ -9,7 +9,7 @@ import { format } from 'date-fns';
 import { ProjectStatus, Project } from '@shared/schema';
 import { Plus, Loader2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'wouter';
 import { toast } from 'sonner';
 
 const statusVariant = {
@@ -25,7 +25,7 @@ export function ProjectList() {
   const { subscribe, isConnected } = useWebSocket();
   const [deletingId, setDeletingId] = useState<number | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
 
   // Handle WebSocket messages for real-time updates
   useEffect(() => {

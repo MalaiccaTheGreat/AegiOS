@@ -1,4 +1,4 @@
-import { Switch, Route, useLocation, Redirect } from "wouter";
+import { Route, useLocation, useRoute, Switch } from "wouter";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -6,9 +6,9 @@ import { BusinessProvider, useBusiness } from "@/contexts/BusinessContext";
 import { AdminProvider } from "@/contexts/AdminContext";
 import { AdminAuthProvider, useAdminAuth } from "@/contexts/AdminAuthContext";
 import { AdminLayout } from "@/components/admin/AdminLayout";
-import { AdminLogin } from "@/pages/admin/login";
-import { AdminDashboard } from "@/pages/admin/dashboard";
-import { useEffect } from "react";
+import AdminLogin from "@/pages/admin/login";
+import AdminDashboard from "@/pages/admin/dashboard";
+import { useEffect, useState } from "react";
 import Layout from "@/components/layout/layout";
 import HomePage from "@/pages/home";
 import LoginPage from "@/pages/login";
@@ -33,9 +33,34 @@ import FloatingAssistant from "@/components/ai/FloatingAssistant";
 // Create a single instance of QueryClient
 const queryClient = new QueryClient();
 
+// Protected route component
+const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const businessContext = useBusiness();
+  const [location, navigate] = useLocation();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    if (businessContext) {
+      if (!businessContext.currentBusiness) {
+        navigate('/business/setup');
+      }
+      setIsLoading(false);
+    }
+  }, [businessContext, navigate]);
+
+  if (isLoading || !businessContext) {
+    return <div>Loading...</div>;
+  }
+
+  if (!businessContext.currentBusiness) {
+    return null;
+  }
+
+  return <>{children}</>;
+};
+
 function AppContent() {
   const [location] = useLocation();
-  const businessContext = useBusiness();
   
   // Set document title based on current route
   useEffect(() => {
@@ -48,123 +73,127 @@ function AppContent() {
       '/invoices': 'Invoices',
       '/payroll': 'Payroll',
       '/reports': 'Reports',
-      '/email': 'Email',
-      '/projects': 'Projects',
+      '/email': 'Email'
     };
     
-    const baseTitle = 'AegisOS';
-    const pageTitle = routeTitles[location] || '';
-    document.title = pageTitle ? `${pageTitle} | ${baseTitle}` : baseTitle;
+    const baseTitle = 'AegiOS';
+    const routeTitle = routeTitles[location] || '';
+    document.title = routeTitle ? `${routeTitle} | ${baseTitle}` : baseTitle;
   }, [location]);
 
-  // Show loading state
-  if (businessContext?.isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  const businesses = businessContext?.businesses || [];
-  const currentBusiness = businessContext?.currentBusiness;
-
-  // Handle business setup flow for logged-in users
-  if (currentBusiness || location === '/dashboard' || location.startsWith('/business')) {
-    // Redirect to business setup if no businesses exist
-    if (businesses.length === 0 && !location.startsWith("/business")) {
-      return <BusinessSetup />;
-    }
-
-    // If no business is selected but businesses exist, redirect to dashboard
-    if (!currentBusiness && businesses.length > 0 && !location.startsWith("/business")) {
-      return <div>Loading your business...</div>;
-    }
-  }
-
   return (
-    <>
-      <DocumentHead />
+    <Layout>
       <Switch>
-        {/* Public routes */}
         <Route path="/" component={HomePage} />
         <Route path="/login" component={LoginPage} />
         <Route path="/register" component={RegisterPage} />
         
-        {/* Protected routes - only accessible when logged in */}
-        <Route path="/app">
-          <Layout>
-            <Switch>
-              <Route path="/app/dashboard" component={Dashboard} />
-              <Route path="/app/inventory" component={Inventory} />
-              <Route path="/app/employees" component={Employees} />
-              <Route path="/app/time-tracking" component={TimeTracking} />
-              <Route path="/app/quotations" component={Quotations} />
-              <Route path="/app/invoices" component={Invoices} />
-              <Route path="/app/payroll" component={Payroll} />
-              <Route path="/app/reports" component={Reports} />
-              <Route path="/app/email" component={Email} />
-              <Route path="/app/business/new" component={BusinessSetup} />
-              <Route path="/app/projects" component={ProjectsPageWithProviders} />
-              <Route path="/app/projects/new" component={NewProjectPageWithProviders} />
-              <Route path="/app/projects/:id" component={ProjectDetailPageWithProviders} />
-              <Route><Redirect to="/app/dashboard" /></Route>
-            </Switch>
-          </Layout>
+        {/* Protected Routes */}
+        <Route path="/dashboard">
+          <ProtectedRoute>
+            <Dashboard />
+          </ProtectedRoute>
         </Route>
         
-        {/* Redirect old routes to new /app/ prefixed routes */}
-        <Route path="/dashboard"><Redirect to="/app/dashboard" /></Route>
-        <Route path="/inventory"><Redirect to="/app/inventory" /></Route>
-        <Route path="/employees"><Redirect to="/app/employees" /></Route>
-        <Route path="/time-tracking"><Redirect to="/app/time-tracking" /></Route>
-        <Route path="/quotations"><Redirect to="/app/quotations" /></Route>
-        <Route path="/invoices"><Redirect to="/app/invoices" /></Route>
-        <Route path="/payroll"><Redirect to="/app/payroll" /></Route>
-        <Route path="/reports"><Redirect to="/app/reports" /></Route>
-        <Route path="/email"><Redirect to="/app/email" /></Route>
-        <Route path="/business/new"><Redirect to="/app/business/new" /></Route>
-        <Route path="/projects"><Redirect to="/app/projects" /></Route>
+        <Route path="/inventory">
+          <ProtectedRoute>
+            <Inventory />
+          </ProtectedRoute>
+        </Route>
         
+        <Route path="/employees">
+          <ProtectedRoute>
+            <Employees />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/time-tracking">
+          <ProtectedRoute>
+            <TimeTracking />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/quotations">
+          <ProtectedRoute>
+            <Quotations />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/invoices">
+          <ProtectedRoute>
+            <Invoices />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/payroll">
+          <ProtectedRoute>
+            <Payroll />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/reports">
+          <ProtectedRoute>
+            <Reports />
+          </ProtectedRoute>
+        </Route>
+        
+        <Route path="/email">
+          <ProtectedRoute>
+            <Email />
+          </ProtectedRoute>
+        </Route>
+        
+        {/* Projects */}
+        <Route path="/projects" component={ProjectsPageWithProviders} />
+        <Route path="/projects/new" component={NewProjectPageWithProviders} />
+        <Route path="/projects/:id" component={ProjectDetailPageWithProviders} />
+        
+        {/* 404 - Not Found */}
         <Route component={NotFound} />
       </Switch>
-    </>
+    </Layout>
   );
 }
 
 // Admin routes wrapper component
 function AdminRoutes() {
-  const { isAuthenticated, isLoading } = useAdminAuth();
-  const [location] = useLocation();
+  const { isAuthenticated, loading } = useAdminAuth();
+  const [location, navigate] = useLocation();
+  const [match] = useRoute('/admin/:rest*');
 
-  if (isLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
+  useEffect(() => {
+    if (loading) return;
+    
+    if (match && !isAuthenticated && !location.startsWith('/admin/login')) {
+      navigate('/admin/login');
+      return;
+    }
 
-  // Redirect to admin login if not authenticated
-  if (!isAuthenticated && !location.startsWith('/admin/login')) {
-    return <Redirect to="/admin/login" />;
-  }
+    if (location === '/admin') {
+      navigate('/admin/dashboard');
+      return;
+    }
+  }, [isAuthenticated, loading, location, match, navigate]);
 
-  // If on login page and already authenticated, redirect to dashboard
-  if (isAuthenticated && location === '/admin/login') {
-    return <Redirect to="/admin/dashboard" />;
+  if (loading) {
+    return <div>Loading...</div>;
   }
 
   return (
-    <AdminLayout>
-      <Switch>
-        <Route path="/admin/dashboard" component={AdminDashboard} />
-        <Route path="/admin/login" component={AdminLogin} />
-        <Route>
-          <Redirect to="/admin/dashboard" />
-        </Route>
-      </Switch>
-    </AdminLayout>
+    <Switch>
+      <Route path="/admin/login" component={AdminLogin} />
+      <Route path="/admin/dashboard">
+        <AdminLayout>
+          <AdminDashboard />
+        </AdminLayout>
+      </Route>
+      {/* Add more admin routes here */}
+      <Route path="/admin/*">
+        <AdminLayout>
+          <AdminDashboard />
+        </AdminLayout>
+      </Route>
+    </Switch>
   );
 }
 

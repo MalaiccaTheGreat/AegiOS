@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useLocation, useRoute } from 'wouter';
 import { useChat } from '../../../contexts/ChatContext';
 import { useAuth } from '../../../contexts/AuthContext';
 import { formatDistanceToNow } from 'date-fns';
@@ -55,8 +55,9 @@ const FilePreview = ({ file, onRemove }: { file: File; onRemove: () => void }) =
   );
 };
 
-export const ChatInterface: React.FC = () => {
-  const { roomId } = useParams<{ roomId: string }>();
+const ChatInterface: React.FC = () => {
+  const [match, params] = useRoute('/chat/:roomId');
+  const roomId = params?.roomId;
   const { user } = useAuth();
   const { 
     messages, 
@@ -69,7 +70,7 @@ export const ChatInterface: React.FC = () => {
     rooms
   } = useChat();
   
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
   const [newMessage, setNewMessage] = useState('');
   const [files, setFiles] = useState<File[]>([]);
   const [isUploading, setIsUploading] = useState(false);
@@ -195,8 +196,6 @@ export const ChatInterface: React.FC = () => {
     return otherParticipants.map(p => p.name).join(', ');
   };
 
-export function ChatInterface() {
-  const { user } = useUser();
   const [message, setMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -517,177 +516,83 @@ export function ChatInterface() {
                     >
                       {!msg.isOwn && (
                         <div className="font-medium text-xs text-muted-foreground">
-                          {msg.sender.name}
-                        </div>
                       )}
-                      <div className="whitespace-pre-wrap break-words">
-                        {msg.content}
-                      </div>
-                      {msg.attachments?.map((file, i) => (
-                        <div key={i} className="mt-2">
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-sm text-blue-500 hover:underline flex items-center"
-                          >
-                            <FileText className="h-4 w-4 mr-1" />
-                            {file.name}
-                          </a>
-                        </div>
-                      ))}
-                      <div className="text-xs mt-1 opacity-70 flex items-center justify-end space-x-1">
-                        {formatDistanceToNow(new Date(msg.createdAt), {
-                          addSuffix: true,
-                        })}
-                        {msg.isOwn && (
-                          <span className="ml-1">
-                            {msg.metadata?.readBy?.length > 1 ? (
-                              <CheckCheck className="h-3 w-3 text-blue-500" />
-                            ) : (
-                              <Check className="h-3 w-3" />
-                            )}
-                          </span>
-                        )}
-                      </div>
                     </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-            </ScrollArea>
-
-            {/* Suggested responses */}
-            {suggestedResponses.length > 0 && (
-              <div className="px-4 pb-2 flex flex-wrap gap-2">
-                {suggestedResponses.map((response, i) => (
-                  <Button
-                    key={i}
-                    variant="outline"
-                    size="sm"
-                    className="text-xs h-auto py-1 px-2 whitespace-normal text-left"
-                    onClick={() => setMessage(response)}
-                  >
-                    {response}
-                  </Button>
-                ))}
-              </div>
-            )}
-
-            {/* Message input */}
-            <div className="p-4 border-t">
-              <form onSubmit={handleSendMessage} className="flex space-x-2">
-                <div className="relative flex-1">
-                  <Input
-                    value={message}
-                    onChange={(e) => {
-                      setMessage(e.target.value);
-                      handleTyping();
-                    }}
-                    placeholder="Type a message..."
-                    className="pr-10"
-                  />
-                  <div className="absolute right-2 top-1/2 transform -translate-y-1/2 flex space-x-1">
-                    <label className="cursor-pointer">
-                      <Paperclip className="h-5 w-5 text-muted-foreground" />
-                      <input
-                        type="file"
-                        className="hidden"
-                        onChange={handleFileUpload}
-                      />
-                    </label>
-                    <Button type="button" variant="ghost" size="icon">
-                      <Smile className="h-5 w-5 text-muted-foreground" />
-                    </Button>
-                  </div>
+                  ))}
                 </div>
-                <Button type="submit" disabled={!message.trim()}>
-                  <Send className="h-4 w-4 mr-2" /> Send
-                </Button>
-              </form>
+              )}
+              <div className="text-xs mt-1 text-right opacity-75">
+                {formatTimestamp(message.timestamp)}
+                {isOwnMessage(message.sender.id) && (
+                  <span className="ml-1">
+                    <IoCheckmarkDone className="inline" />
+                  </span>
+                )}
+              </div>
             </div>
-          </>
-        ) : (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground">
-            Select a chat to start messaging
+          </div>
+        ))}
+        <div ref={messagesEndRef} />
+      </div>
+
+      {/* Message input */}
+      <div className="border-t border-gray-200 p-4 bg-white">
+        {files.length > 0 && (
+          <div className="flex flex-wrap mb-2">
+            {files.map((file, index) => (
+              <FilePreview
+                key={index}
+                file={file}
+                onRemove={() => removeFile(index)}
+              />
+            ))}
           </div>
         )}
-    </div>
-    
-    {/* Message input */}
-    <div className="border-t border-gray-200 p-4 bg-white">
-      {/* File previews */}
-      {files.length > 0 && (
-        <div className="flex flex-wrap mb-3">
-          {files.map((file, index) => (
-            <FilePreview
-              key={index}
-              file={file}
-              onRemove={() => removeFile(index)}
-            />
-          ))}
-        </div>
-      )}
-      
-      <div className="relative flex items-end">
-        <div className="flex-shrink-0 flex space-x-2 mr-2">
-          <button
-            type="button"
-            className="text-gray-400 hover:text-gray-500"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <FiPaperclip className="h-5 w-5" />
-            <span className="sr-only">Attach file</span>
-          </button>
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileSelect}
-            className="hidden"
-            multiple
-          />
-          
-          <button
-            type="button"
-            className="text-gray-400 hover:text-gray-500"
-            onClick={() => setShowEmojiPicker(!showEmojiPicker)}
-          >
-            <FiSmile className="h-5 w-5" />
-            <span className="sr-only">Add emoji</span>
-          </button>
-          
-          {showEmojiPicker && (
-            <div className="absolute bottom-10 left-0 z-10">
-              <EmojiPicker
-                onSelect={(emoji) => {
-                  setNewMessage(prev => prev + emoji);
-                  setShowEmojiPicker(false);
-                }}
+        <div className="flex items-end space-x-2">
+          <div className="relative flex-1">
+            <div className="absolute bottom-2 left-2 flex space-x-1">
+              <input
+                type="file"
+                ref={fileInputRef}
+                onChange={handleFileSelect}
+                className="hidden"
+                multiple
               />
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="p-2 text-gray-500 hover:text-gray-700"
+              >
+                <FiPaperclip className="h-5 w-5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+                className="p-2 text-gray-500 hover:text-gray-700"
+              >
+                <FiSmile className="h-5 w-5" />
+              </button>
             </div>
-          )}
-        </div>
-        
-        <div className="flex-1 relative">
-          <textarea
-            ref={inputRef}
-            rows={1}
-            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm resize-none max-h-32 py-2 pr-10"
-            placeholder="Type a message..."
-            value={newMessage}
-            onChange={handleInputChange}
-            onKeyDown={handleKeyDown}
-            onFocus={() => {
-              // Auto-expand textarea
-              const textarea = inputRef.current;
-              if (textarea) {
-                textarea.style.height = 'auto';
-                textarea.style.height = `${Math.min(textarea.scrollHeight, 128)}px`;
-              }
-            }}
-          />
-          
-          <div className="absolute inset-y-0 right-0 flex items-center pr-3">
+            {showEmojiPicker && (
+              <div className="absolute bottom-12 left-0">
+                <EmojiPicker
+                  onSelect={(emoji) => {
+                    setNewMessage(prev => prev + emoji);
+                    setShowEmojiPicker(false);
+                  }}
+                />
+              </div>
+            )}
+            <textarea
+              ref={inputRef}
+              value={newMessage}
+              onChange={handleInputChange}
+              onKeyDown={handleKeyDown}
+              placeholder="Type a message..."
+              className="w-full border border-gray-300 rounded-lg py-2 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none"
+              rows={1}
+              style={{ minHeight: '44px', maxHeight: '120px' }}
+            />
             <button
               type="button"
               onClick={handleSendMessage}
@@ -737,3 +642,5 @@ function debounce<T extends (...args: any[]) => any>(
     timeout = setTimeout(() => func.apply(this, args), wait);
   };
 }
+
+export default ChatInterface;

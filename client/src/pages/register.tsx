@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/contexts/AuthContext";
@@ -45,7 +45,7 @@ export default function RegisterPage() {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [step, setStep] = useState(1);
   const { register } = useAuth();
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
   
   // Add animated gradient background effect
   useEffect(() => {
@@ -429,5 +429,6 @@ export default function RegisterPage() {
           </a>
         </div>
       </div>
+    </div>
   );
 }

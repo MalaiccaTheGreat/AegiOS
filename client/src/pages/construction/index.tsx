@@ -2,7 +2,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'wouter';
 import { useBusiness } from '@/contexts/BusinessContext';
 import ProjectList from './ProjectList';
 import LaborEfficiency from './LaborEfficiency';
@@ -10,7 +10,7 @@ import MaterialTracker from './MaterialTracker';
 import ClientPortal from './ClientPortal';
 
 export default function ConstructionDashboard() {
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
   const { currentBusiness } = useBusiness();
 
   if (!currentBusiness) {

@@ -28,7 +28,22 @@ export default function EmailModal({ isOpen, onClose }: EmailModalProps) {
   const { toast } = useToast();
 
   const { data: templates = [] } = useQuery<EmailTemplate[]>({
-    queryKey: ["/api/email-templates"],
+    queryKey: ['emailTemplates'],
+    queryFn: async () => {
+      const response = await fetch('/api/email-templates');
+      if (!response.ok) {
+        throw new Error('Failed to fetch email templates');
+      }
+      const contentType = response.headers.get('content-type');
+      if (!contentType?.includes('application/json')) {
+        throw new Error('Received non-JSON response from server');
+      }
+      return response.json();
+    },
+    onError: (error) => {
+      console.error('Error fetching email templates:', error);
+      toast.error('Failed to load email templates');
+    },
     enabled: isOpen,
   });
 

@@ -1,11 +1,12 @@
 import React from 'react';
-import { useParams, Outlet } from 'react-router-dom';
+import { useRoute } from 'wouter';
 import { ChatRoomList } from '../components/chat/ChatRoomList';
 import { ChatInterface } from '../components/chat/ChatInterface';
 import { ChatProvider } from '../contexts/ChatContext';
 
 const ChatPage: React.FC = () => {
-  const { roomId } = useParams<{ roomId?: string }>();
+  const [match, params] = useRoute('/chat/:roomId');
+  const roomId = params?.roomId;
 
   return (
     <ChatProvider>
@@ -56,8 +57,7 @@ const ChatPage: React.FC = () => {
         </div>
       </div>
       
-      {/* For nested routes */}
-      <Outlet />
+      {/* Nested routes are handled by the router */}
     </ChatProvider>
   );
 };

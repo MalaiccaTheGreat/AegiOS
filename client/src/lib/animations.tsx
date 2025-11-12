@@ -1,4 +1,4 @@
-import { motion, AnimatePresence, Variants } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { ReactNode, useEffect, useRef, useState } from 'react';
 import { cn } from '@/lib/utils';
 
@@ -94,7 +94,6 @@ export const VoiceWave = ({ isListening = false, className = '' }: { isListening
 // Data Streaming Visualization
 export const DataStream = ({ data, className = '' }: { data: number[]; className?: string }) => {
   const containerRef = useRef<HTMLDivElement>(null);
-  const [width, setWidth] = useState(0);
 
   useEffect(() => {
     if (containerRef.current) {

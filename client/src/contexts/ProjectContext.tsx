@@ -132,7 +132,16 @@ export function ProjectProvider({ children }: { children: React.ReactNode }) {
   };
 
   const updateProject = async (id: number, project: Partial<Project>): Promise<Project> => {
-    if (!currentBusiness) throw new Error('No business selected');
+    if (!currentBusiness) {
+      const error = new Error('No business selected. Please select a business first.');
+      setError(error.message);
+      toast({
+        title: 'Business Required',
+        description: 'Please select a business before updating a project.',
+        variant: 'destructive',
+      });
+      throw error;
+    }
     
     setLoading(true);
     setError(null);

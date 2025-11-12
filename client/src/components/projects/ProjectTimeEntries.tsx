@@ -4,7 +4,7 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { useProjects } from '@/contexts/ProjectContext';
 import { format } from 'date-fns';
 import { Clock, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'wouter';
 
 interface TimeEntry {
   id: number;
@@ -21,7 +21,7 @@ export function ProjectTimeEntries({ projectId }: { projectId: number }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { getProjectTimeEntries } = useProjects();
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
 
   useEffect(() => {
     const loadTimeEntries = async () => {

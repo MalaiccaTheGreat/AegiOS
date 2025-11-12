@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useWebSocket } from '@/contexts/WebSocketContext';
 import { useResponsive } from '@/contexts/BusinessContext';
@@ -120,7 +120,6 @@ function MetricCard({
   metric: Metric & { _updatedAt?: number };
   formattedValue: string;
 }) {
-  const [isVisible, setIsVisible] = useState(true);
   const [displayValue, setDisplayValue] = useState(formattedValue);
   const prevValue = usePrevious(metric.value);
   const change = metric.change || 0;
@@ -128,16 +127,14 @@ function MetricCard({
   // Handle value changes with animation
   useEffect(() => {
     if (prevValue !== undefined && prevValue !== metric.value) {
-      // Trigger animation
-      setIsVisible(false);
-      
+      // Trigger animation by updating the display value after a delay
       const timer = setTimeout(() => {
         setDisplayValue(formattedValue);
-        setIsVisible(true);
       }, 150);
       
       return () => clearTimeout(timer);
     }
+    return undefined; // Explicitly return undefined when no cleanup is needed
   }, [metric.value, formattedValue, prevValue]);
 
   return (

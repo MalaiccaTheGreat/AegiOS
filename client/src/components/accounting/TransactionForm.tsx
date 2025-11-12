@@ -1,54 +1,37 @@
 import React, { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useRoute, useLocation } from 'wouter';
 import { 
   Box, 
   Button, 
   TextField, 
   Typography, 
-  Paper, 
   Grid, 
   Divider, 
-  MenuItem, 
-  InputAdornment,
   IconButton,
+  useTheme,
+  useMediaQuery,
+  Paper,
   Table,
   TableBody,
   TableCell,
   TableContainer,
   TableHead,
   TableRow,
-  TableFooter,
-  TablePagination,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  FormControl,
-  InputLabel,
-  Select,
-  SelectChangeEvent,
-  FormHelperText,
-  useTheme,
-  useMediaQuery
+  InputAdornment
 } from '@mui/material';
-import {
+import { 
   Add as AddIcon,
   Delete as DeleteIcon,
   Save as SaveIcon,
   Cancel as CancelIcon,
-  Search as SearchIcon,
-  AttachMoney as MoneyIcon,
-  Description as DescriptionIcon,
-  DateRange as DateIcon,
-  AccountTree as AccountIcon,
-  Receipt as ReceiptIcon,
-  AddCircleOutline as AddLineIcon
+  AttachFile as AttachFileIcon
 } from '@mui/icons-material';
 import { DatePicker } from '@mui/x-date-pickers/DatePicker';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { format, parseISO } from 'date-fns';
 import { useApi } from '../../hooks/useApi';
+import { toast } from 'sonner';
+import { format, parseISO } from 'date-fns';
 
 // Types
 type Account = {
@@ -69,8 +52,10 @@ type TransactionLine = {
 };
 
 const TransactionForm: React.FC = () => {
-  const { businessId, id } = useParams<{ businessId: string; id?: string }>();
-  const navigate = useNavigate();
+  const [match, params] = useRoute('/business/:businessId/accounting/transactions/:id?');
+  const businessId = params?.businessId;
+  const id = params?.id;
+  const [location, navigate] = useLocation();
   const api = useApi();
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -210,7 +195,7 @@ const TransactionForm: React.FC = () => {
     setNotes(e.target.value);
   };
 
-  const handleLineChange = (id: string, field: keyof TransactionLine, value: any) => {
+  const handleLineChange = (id: string, field: keyof TransactionLine, value: number | string) => {
     setLines(
       lines.map((line) =>
         line.id === id ? { ...line, [field]: value } : line

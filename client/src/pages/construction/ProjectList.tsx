@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
 import { format } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'wouter';
 import { ProjectStatus } from '@shared/schema';
 
 interface ProjectListProps {
@@ -21,7 +21,7 @@ const statusVariant = {
 };
 
 export default function ProjectList({ businessId }: ProjectListProps) {
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
 
   const { data: projects = [], isLoading } = useQuery({
     queryKey: ['construction-projects', businessId],

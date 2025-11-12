@@ -1,5 +1,5 @@
-import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
+import { useRoute } from 'wouter';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
@@ -51,13 +51,12 @@ interface ProjectDetails {
   }>;
 }
 
-interface ClientPortalProps {
-  businessId: string;
-}
+// Removed unused interface as we're not using props
 
-export default function ClientPortal({ businessId }: ClientPortalProps) {
-  const { projectId } = useParams();
-  
+export default function ClientPortal() {
+  const [, params] = useRoute('/construction/projects/:projectId/client-portal');
+  const projectId = params?.projectId;
+
   const { data: project, isLoading } = useQuery<ProjectDetails>({
     queryKey: ['client-project', projectId],
     queryFn: async () => {

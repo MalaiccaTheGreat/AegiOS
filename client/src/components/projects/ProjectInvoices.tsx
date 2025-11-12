@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { useProjects } from '@/contexts/ProjectContext';
 import { format } from 'date-fns';
 import { FileText, Plus } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation } from 'wouter';
 
 interface Invoice {
   id: number;
@@ -22,7 +22,7 @@ export function ProjectInvoices({ projectId }: { projectId: number }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const { getProjectInvoices } = useProjects();
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
 
   useEffect(() => {
     const loadInvoices = async () => {

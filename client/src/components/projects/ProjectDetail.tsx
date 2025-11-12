@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useLocation, useRoute } from 'wouter';
 import { format } from 'date-fns';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -22,11 +22,12 @@ const statusVariant = {
 };
 
 export function ProjectDetail() {
-  const { id } = useParams<{ id: string }>();
+  const [match, params] = useRoute('/projects/:id');
+  const id = params?.id;
   const { getProject, deleteProject, loading } = useProjects();
   const [project, setProject] = useState<any>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
   const { toast } = useToast();
   const [activeTab, setActiveTab] = useState('overview');
 

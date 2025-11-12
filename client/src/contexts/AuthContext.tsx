@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useLocation, useNavigate } from 'wouter';
+import { useLocation } from 'wouter';
 import { toast } from '@/components/ui/use-toast';
 
 interface User {
@@ -22,7 +22,7 @@ const AuthContext = createContext<AuthContextType | null>(null);
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
-  const [, navigate] = useLocation();
+  const [location, navigate] = useLocation();
 
   useEffect(() => {
     // Check if user is already logged in

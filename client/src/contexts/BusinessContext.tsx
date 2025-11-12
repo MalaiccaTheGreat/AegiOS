@@ -77,21 +77,33 @@ export function BusinessProvider({ children }: { children: ReactNode }): JSX.Ele
     isUltraWide 
   } = useMediaQuery();
 
-  const { data: businessesData, isLoading } = useQuery<Business[]>({
+  const { data: businessesData, isLoading, error } = useQuery<Business[]>({
     queryKey: ['businesses'],
     queryFn: async (): Promise<Business[]> => {
-      try {
-        const response = await fetch('/api/businesses');
-        if (!response.ok) {
-          throw new Error('Network response was not ok');
+      const response = await fetch('/api/businesses');
+      const contentType = response.headers.get('content-type');
+      
+      if (!response.ok) {
+        const errorText = await response.text();
+        try {
+          // Try to parse as JSON for structured error messages
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.message || 'Failed to fetch businesses');
+        } catch {
+          // If not JSON, use the raw error text
+          throw new Error(errorText || 'Failed to fetch businesses');
         }
-        const data = await response.json();
-        return data;
-      } catch (error) {
-        console.error("Error fetching businesses:", error);
-        toast.error("Failed to load businesses");
-        throw error;
       }
+
+      if (!contentType?.includes('application/json')) {
+        throw new Error('Received non-JSON response from server');
+      }
+
+      return response.json();
+    },
+    onError: (error) => {
+      console.error("Error fetching businesses:", error);
+      toast.error(error instanceof Error ? error.message : 'Failed to load businesses');
     },
     refetchOnWindowFocus: false,
     retry: 1,

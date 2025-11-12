@@ -4,7 +4,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
 import { format } from 'date-fns';
 import { CalendarIcon, Loader2 } from 'lucide-react';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useRoute } from 'wouter';
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,12 +31,13 @@ const projectFormSchema = z.object({
 type ProjectFormValues = z.infer<typeof projectFormSchema>;
 
 export function ProjectForm() {
-  const { id } = useParams<{ id?: string }>();
+  const [match, params] = useRoute('/projects/:id');
+  const id = params?.id;
   const isEditMode = !!id;
   const { createProject, updateProject, getProject, loading } = useProjects();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
-  const navigate = useNavigate();
+  const [location, navigate] = useLocation();
 
   const form = useForm<ProjectFormValues>({
     resolver: zodResolver(projectFormSchema),
