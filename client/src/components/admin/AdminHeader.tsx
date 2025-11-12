@@ -1,19 +1,17 @@
-import { Link } from 'wouter';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { Search, Bell, LogOut } from 'lucide-react';
 import { useAdminAuth } from '../../contexts/AdminAuthContext';
+import { MobileMenu } from '../layout/sidebar';
 
 export function AdminHeader() {
-  const { admin, logout } = useAdminAuth();
+  const { logout } = useAdminAuth();
 
   return (
     <header className="bg-white dark:bg-gray-800 shadow-sm">
       <div className="flex items-center justify-between h-16 px-6">
         <div className="flex items-center">
-          <Link href="/admin/dashboard" className="text-xl font-semibold text-gray-900 dark:text-white">
-            Admin Panel
-          </Link>
+          <MobileMenu />
         </div>
         
         <div className="flex-1 max-w-2xl mx-4">

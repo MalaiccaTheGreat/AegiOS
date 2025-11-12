@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,13 +8,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Loader2, Lock, Mail } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function AdminLoginPage() {
+export function AdminLogin() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const { login } = useAdminAuth();
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -28,7 +28,7 @@ export default function AdminLoginPage() {
       setIsLoading(true);
       await login(email, password);
       toast.success('Authentication successful');
-      navigate('/admin/dashboard');
+      setLocation('/admin/dashboard');
     } catch (error) {
       console.error('Login error:', error);
       toast.error('Authentication failed. Please check your credentials.');

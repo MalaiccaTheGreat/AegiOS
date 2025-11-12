@@ -31,7 +31,6 @@ import {
   Add as AddIcon,
   ArrowForward as ArrowForwardIcon
 } from '@mui/icons-material';
-import { useApi } from '../../hooks/useApi';
 
 // Sample data - in a real app, this would come from the API
 const quickStats = [
@@ -51,7 +50,6 @@ const recentTransactions = [
 const AccountingDashboard: React.FC = () => {
   const { businessId } = useParams<{ businessId: string }>();
   const navigate = useNavigate();
-  const api = useApi();
   const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState(0);
   const theme = useTheme();
@@ -71,7 +69,7 @@ const AccountingDashboard: React.FC = () => {
     };
 
     fetchData();
-  }, [businessId, api]);
+  }, [businessId]);
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setActiveTab(newValue);

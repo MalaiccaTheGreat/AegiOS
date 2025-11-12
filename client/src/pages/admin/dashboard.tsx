@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate, Link } from 'wouter';
+import { useLocation, Link } from 'wouter';
 import { useAdminAuth } from '@/contexts/AdminAuthContext';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -18,9 +18,9 @@ const mockUsers = [
   { id: 3, name: 'Bob Johnson', email: 'bob@example.com', role: 'viewer', status: 'inactive', lastLogin: '2023-05-10T09:15:00Z' },
 ];
 
-export default function AdminDashboard() {
+export function AdminDashboard() {
   const { admin, logout } = useAdminAuth();
-  const navigate = useNavigate();
+  const [, setLocation] = useLocation();
   const [searchQuery, setSearchQuery] = useState('');
   const [users, setUsers] = useState(mockUsers);
 
@@ -42,7 +42,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     logout();
-    navigate('/admin/login');
+    setLocation('/app/admin/login');
   };
 
   const filteredUsers = users.filter(user => 
@@ -65,7 +65,7 @@ export default function AdminDashboard() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between h-16 items-center">
             <div className="flex items-center">
-              <Link href="/admin/dashboard" className="text-xl font-bold text-gray-900 dark:text-white">
+              <Link href="/app/admin/dashboard" className="text-xl font-bold text-gray-900 dark:text-white">
                 Admin Dashboard
               </Link>
             </div>

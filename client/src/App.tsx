@@ -8,6 +8,16 @@ import { AdminAuthProvider, useAdminAuth } from "@/contexts/AdminAuthContext";
 import { AdminLayout } from "@/components/admin/AdminLayout";
 import { AdminLogin } from "@/pages/admin/login";
 import { AdminDashboard } from "@/pages/admin/dashboard";
+import AdminAccounting from "@/pages/admin/accounting";
+import AdminProjects from "@/pages/admin/projects";
+import AdminInventory from "@/pages/admin/inventory";
+import AdminEmployees from "@/pages/admin/employees";
+import AdminTimeTracking from "@/pages/admin/time-tracking";
+import AdminQuotations from "@/pages/admin/quotations";
+import AdminInvoices from "@/pages/admin/invoices";
+import AdminPayroll from "@/pages/admin/payroll";
+import AdminReports from "@/pages/admin/reports";
+import AdminEmail from "@/pages/admin/email";
 import { useEffect } from "react";
 import Layout from "@/components/layout/layout";
 import HomePage from "@/pages/home";
@@ -29,6 +39,7 @@ import { ProjectDetailPageWithProviders } from "@/pages/projects/[id]";
 import { NewProjectPageWithProviders } from "@/pages/projects/new";
 import { DocumentHead } from "@/components/seo/DocumentHead";
 import FloatingAssistant from "@/components/ai/FloatingAssistant";
+import { SidebarProvider } from "./contexts/SidebarContext";
 
 // Create a single instance of QueryClient
 const queryClient = new QueryClient();
@@ -108,6 +119,7 @@ function AppContent() {
               <Route path="/app/projects" component={ProjectsPageWithProviders} />
               <Route path="/app/projects/new" component={NewProjectPageWithProviders} />
               <Route path="/app/projects/:id" component={ProjectDetailPageWithProviders} />
+              <Route path="/app/admin/:rest*" component={AdminRoutes} />
               <Route><Redirect to="/app/dashboard" /></Route>
             </Switch>
           </Layout>
@@ -146,22 +158,32 @@ function AdminRoutes() {
   }
 
   // Redirect to admin login if not authenticated
-  if (!isAuthenticated && !location.startsWith('/admin/login')) {
-    return <Redirect to="/admin/login" />;
+  if (!isAuthenticated && !location.startsWith('/app/admin/login')) {
+    return <Redirect to="/app/admin/login" />;
   }
 
   // If on login page and already authenticated, redirect to dashboard
-  if (isAuthenticated && location === '/admin/login') {
-    return <Redirect to="/admin/dashboard" />;
+  if (isAuthenticated && location === '/app/admin/login') {
+    return <Redirect to="/app/admin/dashboard" />;
   }
 
   return (
     <AdminLayout>
       <Switch>
-        <Route path="/admin/dashboard" component={AdminDashboard} />
-        <Route path="/admin/login" component={AdminLogin} />
+        <Route path="/app/admin/dashboard" component={AdminDashboard} />
+        <Route path="/app/admin/login" component={AdminLogin} />
+        <Route path="/app/admin/accounting" component={AdminAccounting} />
+        <Route path="/app/admin/projects" component={AdminProjects} />
+        <Route path="/app/admin/inventory" component={AdminInventory} />
+        <Route path="/app/admin/employees" component={AdminEmployees} />
+        <Route path="/app/admin/time-tracking" component={AdminTimeTracking} />
+        <Route path="/app/admin/quotations" component={AdminQuotations} />
+        <Route path="/app/admin/invoices" component={AdminInvoices} />
+        <Route path="/app/admin/payroll" component={AdminPayroll} />
+        <Route path="/app/admin/reports" component={AdminReports} />
+        <Route path="/app/admin/email" component={AdminEmail} />
         <Route>
-          <Redirect to="/admin/dashboard" />
+          <Redirect to="/app/admin/dashboard" />
         </Route>
       </Switch>
     </AdminLayout>
@@ -175,19 +197,11 @@ function App() {
         <BusinessProvider>
           <AdminAuthProvider>
             <AdminProvider>
-              <Switch>
-                {/* Admin routes */}
-                <Route path="/admin">
-                  <AdminRoutes />
-                </Route>
-                
-                {/* Main app routes */}
-                <Route>
-                  <AppContent />
-                </Route>
-              </Switch>
-              <Toaster />
-              <FloatingAssistant />
+              <SidebarProvider>
+                <AppContent />
+                <Toaster />
+                <FloatingAssistant />
+              </SidebarProvider>
             </AdminProvider>
           </AdminAuthProvider>
         </BusinessProvider>

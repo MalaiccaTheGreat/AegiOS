@@ -15,7 +15,7 @@ export default function HomePage() {
     // Check for admin mode in localStorage on component mount
     if (localStorage.getItem('adminMode') === 'true') {
       toggleAdmin();
-      navigate('/app/dashboard');
+      navigate('/app/admin/dashboard');
     }
   }, []);
 
@@ -53,21 +53,11 @@ export default function HomePage() {
               </motion.div>
             </div>
             <div className="flex items-center space-x-4">
-              <button 
-                onClick={toggleAdmin}
-                className={`px-3 py-2 rounded-lg flex items-center space-x-2 text-sm font-medium transition-all duration-300 ${
-                  isAdmin 
-                    ? 'bg-green-500/10 text-green-400 hover:bg-green-500/20' 
-                    : 'bg-white/5 hover:bg-white/10 text-gray-300'
-                }`}
-                title={isAdmin ? 'Exit Admin Mode' : 'Enter Admin Mode'}
-              >
-                {isAdmin ? (
-                  <><Unlock className="h-4 w-4" /> <span>Admin Mode</span></>
-                ) : (
-                  <><Lock className="h-4 w-4" /> <span>Admin</span></>
-                )}
-              </button>
+              <Link href="/app/admin/login">
+                <Button variant="outline" className="bg-transparent border-white/20 hover:bg-white/10 hover:text-white">
+                  Admin
+                </Button>
+              </Link>
               
               {/* Sign In Button */}
               <Link href="/login">

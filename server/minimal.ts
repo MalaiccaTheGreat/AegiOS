@@ -2,7 +2,7 @@ import express, { Request, Response } from 'express';
 import http from 'http';
 import { createPool } from 'mysql2/promise';
 import { drizzle } from 'drizzle-orm/mysql2';
-import * as schema from './shared/schema.js';
+import * as schema from '../shared/schema.js';
 
 const app = express();
 const server = http.createServer(app);
