@@ -36,9 +36,30 @@ async function initializeApp() {
     } = process.env;
 
     // Create database connection
-    // Add a basic health check endpoint
+    // Root route
+    app.get('/', (req: Request, res: Response) => {
+      res.json({
+        message: 'Welcome to AegiOS API',
+        endpoints: {
+          health: '/health',
+          api: {
+            businesses: '/api/businesses',
+            services: '/api/services',
+            employees: '/api/employees'
+            // Add more endpoints as they're created
+          },
+          docs: '/api-docs' // Will be added when you set up API documentation
+        }
+      });
+    });
+
+    // Health check endpoint
     app.get('/health', (req: Request, res: Response) => {
-      res.json({ status: 'ok', message: 'Server is running' });
+      res.json({ 
+        status: 'ok', 
+        timestamp: new Date().toISOString(),
+        uptime: process.uptime()
+      });
     });
 
     // Start the server first
